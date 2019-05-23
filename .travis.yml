@@ -4,6 +4,8 @@ cache: false
 env:
 - URL=https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
 before_install:
+- openssl aes-256-cbc -K $encrypted_9f211450d016_key -iv $encrypted_9f211450d016_iv
+  -in assets/server.key.enc -out assets/server.key -d
 - export SFDX_AUTOUPDATE_DISABLE=false
 - export SFDX_USE_GENERIC_UNIX_KEYCHAIN=true
 - export SFDX_DOMAIN_RETRY=300
@@ -20,17 +22,21 @@ before_install:
 - sfdx force:auth:jwt:grant --clientid $CONSUMERKEY_SAND --jwtkeyfile assets/server.key
   --username $USERNAME_SAND -a SandOrg
 script:
-- sfdx force:org:create -v HubOrg -s -f config/project-scratch-def.json -a ciorg --wait 6
+- sfdx force:org:create -v HubOrg -s -f config/project-scratch-def.json -a ciorg --wait
+  6
 - sfdx force:org:display -u ciorg
 - sfdx force:source:push -u ciorg
 - sfdx force:apex:test:run -u ciorg --wait 10
 - sfdx force:org:delete -u ciorg -p
 before_deploy:
-  - export PACKAGEVERSION="$(sfdx force:package:version:create -p $PACKAGENAME -d force-app -k $PACKAGEPASS --wait 10 --json -v HubOrg | jq '.result.SubscriberPackageVersionId' | tr -d '"')"
+- export PACKAGEVERSION="$(sfdx force:package:version:create -p $PACKAGENAME -d force-app
+  -k $PACKAGEPASS --wait 10 --json -v HubOrg | jq '.result.SubscriberPackageVersionId'
+  | tr -d '"')"
 deploy:
   skip_cleanup: true
   provider: script
-  script: echo "* Deploy Package Version:${PACKAGEVERSION}" && sfdx force:package:install --wait 10 --publishwait 10 -p $PACKAGEVERSION -k $PACKAGEPASS -u SandOrg
+  script: echo "* Deploy Package Version:${PACKAGEVERSION}" && sfdx force:package:install
+    --wait 10 --publishwait 10 -p $PACKAGEVERSION -k $PACKAGEPASS -u SandOrg
   on:
     branch: develop
 branches:
