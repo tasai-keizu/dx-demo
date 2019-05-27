@@ -1,0 +1,18 @@
+{
+    "records": [
+        {
+            "attributes": {
+                "type": "Sample__c",
+                "referenceId": "Sample__cRef1"
+            },
+            "Name": "サンプル２"
+        },
+        {
+            "attributes": {
+                "type": "Sample__c",
+                "referenceId": "Sample__cRef2"
+            },
+            "Name": "サンプル１"
+        }
+    ]
+}
